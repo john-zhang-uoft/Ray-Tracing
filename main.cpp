@@ -1,6 +1,4 @@
-//
-// Created by johnz on 2021-06-10.
-//
+
 #include <src/colour_gradient.h>
 
 int main() {

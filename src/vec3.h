@@ -1,4 +1,3 @@
-// Implementation by Pete Shirley
 
 #include <cmath>
 #include <cstdlib>

@@ -1,6 +1,3 @@
-//
-// Created by johnz on 2021-06-10.
-//
 
 #ifndef RAY_TRACING_RAY_H
 #define RAY_TRACING_RAY_H

@@ -1,6 +1,4 @@
-//
-// Created by johnz on 2021-06-10.
-//
+
 #include <iostream>
 #include <fstream>
 #include "vec3.h"
@@ -23,8 +21,8 @@ public:
     int y_pixels;
 
     inline void draw_diagonal_gradient(const string &filename, float default_blue) const;
-    void draw_sky_background(const string &filename) const;
-    vec3 color(const ray& r) const;
+    inline void draw_sky_background(const string &filename) const;
+    static vec3 color(const ray& r);
 };
 
 inline void colour_gradient::draw_diagonal_gradient(const string &filename, float default_blue) const {
@@ -46,7 +44,7 @@ inline void colour_gradient::draw_diagonal_gradient(const string &filename, floa
     File.close();
 }
 
-void colour_gradient::draw_sky_background(const string &filename) const {
+inline void colour_gradient::draw_sky_background(const string &filename) const {
     ofstream File(filename);
 
     File << "P3\n" << x_pixels << " " << y_pixels << "\n255\n";
@@ -71,7 +69,7 @@ void colour_gradient::draw_sky_background(const string &filename) const {
 
 }
 
-vec3 colour_gradient::color(const ray &r) const {
+vec3 colour_gradient::color(const ray &r) {
     vec3 unit_direction = unit_vector(r.direction());
     float t = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
