@@ -5,7 +5,7 @@
 #include "vec3.h"
 
 class ray {
-    // Ray is represented by the equation p(t) = A + t * B
+    // Ray is represented by the equation point(t) = A + t * B
 public:
     ray() = default;
 
@@ -22,7 +22,7 @@ public:
         return B;
     }
 
-    vec3 point_at_parameter(float t) const {
+    vec3 point_given_parameter(float t) const {
         return A + t * B;
     }
 
