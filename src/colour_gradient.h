@@ -70,7 +70,7 @@ inline void colour_gradient::draw_sky_background(const string &filename) const {
     camera cam;
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(0.0, 1.0);
+    std::uniform_real_distribution<float> dist(0.0, 1.0);
 
     for (int y_ind = y_pixels - 1; y_ind >= 0; y_ind--) {
         for (int x_ind = 0; x_ind < x_pixels; x_ind++) {
@@ -106,8 +106,13 @@ vec3 colour_gradient::color(const ray &r, hittable *world) {
 vec3 random_in_unit_sphere() {
     // Get a random vector with length less than 1
     vec3 point;
+
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<float> dist(0.0, 1.0);
+
     do {
-        point = (2.0 * vec3(get_random_number_0_to_1(), get_random_number_0_to_1(), get_random_number_0_to_1()))
+        point = (2.0 * vec3(dist(mt), dist(mt), dist(mt)))
                 - vec3(1, 1, 1);
     } while (point.squared_length() >= 1.0);
     return point;
@@ -117,7 +122,7 @@ vec3 colour_gradient::matte_color(const ray &r, hittable *world) {
     hit_record record;
     if (world->hit(r, 0.0, MAX_FLOAT, record)) {
         vec3 target = record.point + record.normal + random_in_unit_sphere();
-        return 0.5 * color(ray(record.point, target - record.point), world);
+        return 0.5 * matte_color(ray(record.point, target - record.point), world);
     } else {
         vec3 unit_direction = unit_vector(r.direction());
         float t = 0.5 * (unit_direction.y() + 1.0);
@@ -128,7 +133,7 @@ vec3 colour_gradient::matte_color(const ray &r, hittable *world) {
 static float get_random_number_0_to_1() {
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(0.0, 1.0);
+    std::uniform_real_distribution<float> dist(0.0, 1.0);
     return dist(mt);
 }
 
