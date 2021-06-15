@@ -19,16 +19,18 @@ struct hit_record {
 
 class hittable {
 public:
-    virtual bool hit(const ray &r, float t_min, float t_max, hit_record rec) const = 0;
+    // pure virtual function for determining whether a hittable has been hit
+    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &rec) const = 0;
 };
 
 
 class sphere : public hittable {
 public:
     sphere() = default;
+
     sphere(vec3 c, float r) : center(c), radius(r) {};
 
-    virtual bool hit(const ray &r, float t_min, float t_max, hit_record &record) const;
+    bool hit(const ray &r, float t_min, float t_max, hit_record &record) const override;
 
     vec3 center{};
     float radius{};
@@ -39,7 +41,7 @@ bool sphere::hit(const ray &r, float t_min, float t_max, hit_record &record) con
     // Because the result of the dot product of oc and r.direction times 2 is b in the quadratic equation,
     // we say that the dot product of oc and r.direction is 1/2 b, so that the discriminant can be
     // written as 4 * half_b * half_b - 4 * a * c
-    // We can factor out 4, when taken out of the square root that is applied to the disciminant,
+    // We can factor out 4, when taken out of the square root that is applied to the discriminant,
     // becomes 2 * sqrt(half_b * half_b - a * c)
     // This 2 cancels out the 2 in the denominator 2a, so we simplify this expression
     // so that the "discriminant" is half_b * half_b - a * c, and the denominator is a
