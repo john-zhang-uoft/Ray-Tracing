@@ -1,12 +1,18 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
-//
-// Created by johnz on 2021-06-12.
-//
-#include "ray.h"
 
 #ifndef RAY_TRACING_HITTABLE_H
 #define RAY_TRACING_HITTABLE_H
+
+#include "ray.h"
+#include <random>
+
+float get_random_number_0_to_1();
+vec3 random_in_unit_sphere();
+
+class hittable;
+class sphere;
+class material;
+class lambertian;
+class metal;
 
 struct hit_record {
     // Time
@@ -15,6 +21,7 @@ struct hit_record {
     vec3 point;
     // Normal vector to point
     vec3 normal;
+    material *mat_ptr;
 };
 
 class hittable {
@@ -28,12 +35,13 @@ class sphere : public hittable {
 public:
     sphere() = default;
 
-    sphere(vec3 c, float r) : center(c), radius(r) {};
+    sphere(vec3 c, float r, material* m) : center(c), radius(r), mat(m) {};
 
     bool hit(const ray &r, float t_min, float t_max, hit_record &record) const override;
 
     vec3 center{};
     float radius{};
+    material *mat;
 };
 
 
@@ -81,5 +89,59 @@ bool sphere::hit(const ray &r, float t_min, float t_max, hit_record &record) con
     record.normal = (record.point - center) / radius;
     return true;
 }
+
+class material {
+public:
+    virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const = 0;
+};
+
+vec3 reflect(const vec3 &v, const vec3 &n) {
+    return v - 2 * dot(v, n) * n;
+}
+
+class lambertian : public material {
+public:
+    lambertian(const vec3 &a) : albedo(a) {}
+
+    virtual bool scatter(const ray &r_in, const hit_record &record, vec3 &attenuation, ray &scattered) const {
+        vec3 target = record.point + record.normal + random_in_unit_sphere();
+        scattered = ray(record.point, target - record.point);
+        attenuation = albedo;
+        return true;
+    }
+
+    vec3 albedo;
+};
+
+class metal : public material {
+public:
+    metal(const vec3 &a) : albedo(a) {}
+    virtual bool scatter(const ray &r_in, const hit_record &rec, vec3 &attenuation, ray &scattered) const {
+        vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
+        scattered = ray(rec.point, reflected);
+        attenuation = albedo;
+        return (dot(scattered.direction(), rec.normal) > 0);
+    }
+    vec3 albedo;
+};
+
+float get_random_number_0_to_1() {
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
+    return dist(mt);
+}
+
+vec3 random_in_unit_sphere() {
+    // Get a random vector with length less than 1
+    vec3 point;
+    do {
+        point = (2.0 * vec3(get_random_number_0_to_1(), get_random_number_0_to_1(), get_random_number_0_to_1()))
+                - vec3(1, 1, 1);
+    } while (point.squared_length() >= 1.0);
+    return point;
+}
+
+
 
 #endif //RAY_TRACING_HITTABLE_H
