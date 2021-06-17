@@ -87,6 +87,7 @@ bool sphere::hit(const ray &r, float t_min, float t_max, hit_record &record) con
     record.point = r.point_given_parameter(record.t);
     // set the normal vector of that point
     record.normal = (record.point - center) / radius;
+    record.mat_ptr = mat;
     return true;
 }
 
@@ -96,7 +97,7 @@ public:
 };
 
 vec3 reflect(const vec3 &v, const vec3 &n) {
-    return v - 2 * dot(v, n) * n;
+    return v - (2*dot(v, n)*n);
 }
 
 class lambertian : public material {
@@ -116,6 +117,7 @@ public:
 class metal : public material {
 public:
     metal(const vec3 &a) : albedo(a) {}
+
     virtual bool scatter(const ray &r_in, const hit_record &rec, vec3 &attenuation, ray &scattered) const {
         vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         scattered = ray(rec.point, reflected);
@@ -126,18 +128,16 @@ public:
 };
 
 float get_random_number_0_to_1() {
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(0.0, 1.0);
-    return dist(mt);
+    return rand() / (RAND_MAX+ 1.0);
 }
 
 vec3 random_in_unit_sphere() {
     // Get a random vector with length less than 1
     vec3 point;
     do {
-        point = (2.0 * vec3(get_random_number_0_to_1(), get_random_number_0_to_1(), get_random_number_0_to_1()))
-                - vec3(1, 1, 1);
+        point = (2.0 * vec3(get_random_number_0_to_1(),
+                            get_random_number_0_to_1(),
+                            get_random_number_0_to_1())) - vec3(1, 1, 1);
     } while (point.squared_length() >= 1.0);
     return point;
 }
