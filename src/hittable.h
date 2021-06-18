@@ -73,10 +73,10 @@ bool sphere::hit(const ray &r, float t_min, float t_max, hit_record &record) con
 
     // Start by seeing if -half_b - sqrt_discriminant is valid in the field of view
     // If valid, that means that it is the smallest valid root
-    float root = -half_b - sqrt_discriminant / a;
+    float root = (-half_b - sqrt_discriminant) / a;
     // If not valid, consider the larger root (farther point)
     if (root < t_min || t_max < root) {
-        root = -half_b + sqrt_discriminant / a;
+        root = (-half_b + sqrt_discriminant) / a;
         if (root < t_min || t_max < root) {
             return false;
         }

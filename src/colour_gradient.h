@@ -61,13 +61,15 @@ inline void colour_gradient::draw_sky_background(const string &filename) const {
 
     File << "P3\n" << x_pixels << " " << y_pixels << "\n255\n";
 
-    hittable *list[4];
-    list[0] = new sphere(vec3(0, 0, -1), 0.5, new lambertian(vec3(0.8, 0.3, 0.3)));
+    hittable *list[6];
+    list[0] = new sphere(vec3(0, 0, -3), 0.5, new lambertian(vec3(0.8, 0.3, 0.3)));
     list[1] = new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8, 0.8, 0.0)));
-//    list[2] = new sphere(vec3(1, 0, -1), 0.5, new metal(vec3(0.8, 0.6, 0.2)));
-//    list[3] = new sphere(vec3(-1, 0, -1), 0.5, new metal(vec3(0.8, 0.8, 0.8)));
-//    hittable *world = new hittable_list(list, 4);
-    hittable *world = new hittable_list(list, 2);
+    list[2] = new sphere(vec3(1, 0, -2), 0.5, new metal(vec3(0.8, 0.6, 0.2)));
+    list[3] = new sphere(vec3(-1, 0, -2), 0.5, new metal(vec3(0.8, 0.8, 0.8)));
+    list[4] = new sphere(vec3(0.4, 0, -1), 0.2, new metal(vec3(0.8, 0.8, 0.8)));
+    list[5] = new sphere(vec3(-0.3, 0, -1), 0.3, new metal(vec3(0.8, 0.8, 0.8)));
+
+    hittable *world = new hittable_list(list, 6);
     camera cam;
 
     for (int y_ind = y_pixels - 1; y_ind >= 0; y_ind--) {
@@ -127,9 +129,8 @@ vec3 colour_gradient::matte_color(const ray &r, hittable *world) {
             return cur_attenuation * c;
         }
     }
-    return vec3(0.0, 0.0, 0.0);
+    return vec3(0.0, 0.0, 0.0); // exceeded maximum depth of recursion
 }
-
 
 
 #endif //RAY_TRACING_COLOUR_GRADIENT_H
