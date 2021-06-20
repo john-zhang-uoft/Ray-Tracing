@@ -7,6 +7,8 @@
 #include "hittable_list.h"
 #include <limits>
 #include "camera.h"
+#include "material.h"
+#include "create_scene.h"
 
 using namespace std;
 
@@ -18,10 +20,10 @@ using namespace std;
 
 class colour_gradient {
 public:
-    colour_gradient(int x_size, int y_size, int s_size) {
+    colour_gradient(int x_size, int y_size, int samples) {
         x_pixels = x_size;
         y_pixels = y_size;
-        ns = s_size;
+        ns = samples;
     }
 
     int x_pixels;
@@ -30,7 +32,7 @@ public:
 
     inline void draw_diagonal_gradient(const string &filename, float default_blue) const;
 
-    inline void draw_sky_background(const string &filename) const;
+    inline void draw_random_scene(const string &filename) const;
 
     static vec3 color(const ray &r, hittable *world, int depth);
 
@@ -56,42 +58,6 @@ inline void colour_gradient::draw_diagonal_gradient(const string &filename, floa
     File.close();
 }
 
-inline void colour_gradient::draw_sky_background(const string &filename) const {
-    ofstream File(filename);
-
-    File << "P3\n" << x_pixels << " " << y_pixels << "\n255\n";
-
-    hittable *list[6];
-    list[0] = new sphere(vec3(0, 0, -3), 0.5, new lambertian(vec3(0.8, 0.3, 0.3)));
-    list[1] = new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8, 0.8, 0.0)));
-    list[2] = new sphere(vec3(1, 0, -2), 0.5, new metal(vec3(0.8, 0.6, 0.2)));
-    list[3] = new sphere(vec3(-1, 0, -2), 0.5, new metal(vec3(0.8, 0.8, 0.8)));
-    list[4] = new sphere(vec3(0.4, 0, -1), 0.2, new metal(vec3(0.8, 0.8, 0.8)));
-    list[5] = new sphere(vec3(-0.3, 0, -1), 0.3, new metal(vec3(0.8, 0.8, 0.8)));
-
-    hittable *world = new hittable_list(list, 6);
-    camera cam;
-
-    for (int y_ind = y_pixels - 1; y_ind >= 0; y_ind--) {
-        for (int x_ind = 0; x_ind < x_pixels; x_ind++) {
-            vec3 col(0, 0, 0);
-            for (int s = 0; s < ns; s++) {
-                float u = float(x_ind + get_random_number_0_to_1())/ float(x_pixels);
-                float v = float(y_ind + get_random_number_0_to_1())/ float(y_pixels);
-                ray ry = cam.get_ray(u, v);
-                col += matte_color(ry, world);
-            }
-            col /= float(ns);
-            col = vec3( sqrt(col[0]), sqrt(col[1]), sqrt(col[2]) );
-            int r = int(255.99 * col[0]);
-            int g = int(255.99 * col[1]);
-            int b = int(255.99 * col[2]);
-
-            File << r << " " << g << " " << b << "\n";
-        }
-    }
-
-}
 
 vec3 colour_gradient::color(const ray &r, hittable *world, int depth) {
     hit_record record;
@@ -130,6 +96,45 @@ vec3 colour_gradient::matte_color(const ray &r, hittable *world) {
         }
     }
     return vec3(0.0, 0.0, 0.0); // exceeded maximum depth of recursion
+}
+
+
+inline void colour_gradient::draw_random_scene(const string &filename) const {
+
+    hittable_list * world = random_scene();
+
+    // Camera
+
+    vec3 lookfrom(13, 2, 3);
+    vec3 lookat(0, 0, 0);
+    vec3 vup(0, 1, 0);
+    float dist_to_focus = 10.0;
+    float aperture = 0.1;
+
+    camera cam(lookfrom, lookat, vup, 20, x_pixels / y_pixels, aperture, dist_to_focus);
+
+    // Render scene
+    ofstream File(filename);
+    File << "P3\n" << x_pixels << " " << y_pixels << "\n255\n";
+
+    for (int y_ind = y_pixels - 1; y_ind >= 0; y_ind--) {
+        for (int x_ind = 0; x_ind < x_pixels; x_ind++) {
+            vec3 col(0, 0, 0);
+            for (int s = 0; s < ns; s++) {
+                float u = float(x_ind + get_random_number_0_to_1())/ float(x_pixels);
+                float v = float(y_ind + get_random_number_0_to_1())/ float(y_pixels);
+                ray ry = cam.get_ray(u, v);
+                col += color(ry, world, 0);
+            }
+            col /= float(ns);
+            col = vec3( sqrt(col[0]), sqrt(col[1]), sqrt(col[2]) );
+            int r = int(255.99 * col[0]);
+            int g = int(255.99 * col[1]);
+            int b = int(255.99 * col[2]);
+
+            File << r << " " << g << " " << b << "\n";
+        }
+    }
 }
 
 

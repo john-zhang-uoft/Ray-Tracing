@@ -91,42 +91,6 @@ bool sphere::hit(const ray &r, float t_min, float t_max, hit_record &record) con
     return true;
 }
 
-class material {
-public:
-    virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const = 0;
-};
-
-vec3 reflect(const vec3 &v, const vec3 &n) {
-    return v - (2*dot(v, n)*n);
-}
-
-class lambertian : public material {
-public:
-    lambertian(const vec3 &a) : albedo(a) {}
-
-    virtual bool scatter(const ray &r_in, const hit_record &record, vec3 &attenuation, ray &scattered) const {
-        vec3 target = record.point + record.normal + random_in_unit_sphere();
-        scattered = ray(record.point, target - record.point);
-        attenuation = albedo;
-        return true;
-    }
-
-    vec3 albedo;
-};
-
-class metal : public material {
-public:
-    metal(const vec3 &a) : albedo(a) {}
-
-    virtual bool scatter(const ray &r_in, const hit_record &rec, vec3 &attenuation, ray &scattered) const {
-        vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        scattered = ray(rec.point, reflected);
-        attenuation = albedo;
-        return (dot(scattered.direction(), rec.normal) > 0);
-    }
-    vec3 albedo;
-};
-
 float get_random_number_0_to_1() {
     return rand() / (RAND_MAX+ 1.0);
 }
